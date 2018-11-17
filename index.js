@@ -2,6 +2,7 @@ const util = require('util');
 
 const { Client } = require('tplink-smarthome-api');
 const TuyAPI = require('tuyapi');
+const devices = require('./devices')
 
 const client = new Client();
 
@@ -28,32 +29,31 @@ var logEvent = function (eventName, device, state) {
     // controlledDevice.connect();
 // // Client events `device-*` also have `bulb-*` and `plug-*` counterparts.
 // // Use those if you want only events for those types and not all devices.
-    const controlledDevice = new TuyAPI({
-    id: '31172752600194b28500',
-    key: 'ef73c22f356376e2',
-    ip: '192.168.42.14',
-    persistentConnection: true});
-client.getDevice({host:'192.168.42.38'}).then((device) => {
+const controlledDevices = devices.slaves.map((slave) => {
+  return new TuyAPI(Object.assign({persistentConnection: true}, slave.credentials));
+})
+client.getDevice(devices.master.credentials).then((device) => {
   device.startPolling(500);
 
   // Plug Events
   device.on('power-on', () => {
 
-    controlledDevice.set({set: true});
+    controlledDevices.forEach((slave) => {
+      slave.set({set: true});
+    })
     logEvent('power-on', device);
   });
   device.on('power-off', () => {
 
-    controlledDevice.set({set: false});
+    controlledDevices.forEach((slave) => {
+      slave.set({set: false});
+    })
     logEvent('power-off', device);
   });
 //   // device.on('power-update', (powerOn) => { logEvent('power-update', device, powerOn); });
 //   // device.on('in-use', () => { logEvent('in-use', device); });
 //   // device.on('not-in-use', () => { logEvent('not-in-use', device); });
 //   // device.on('in-use-update', (inUse) => { logEvent('in-use-update', device, inUse); });
-
-
- 
 });
 
 
