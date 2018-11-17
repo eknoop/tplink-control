@@ -1,0 +1,16 @@
+{
+  "name": "tplinktest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "tplink-smarthome-api": "github:eknoop/tplink-smarthome-api",
+    "tuyapi": "^3.1.4"
+  }
+}
