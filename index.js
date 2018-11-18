@@ -2,6 +2,8 @@ const util = require('util');
 
 const { Client } = require('tplink-smarthome-api');
 const TuyAPI = require('tuyapi');
+const axios = require('axios');
+
 const devices = require('./devices')
 
 const client = new Client();
@@ -33,10 +35,12 @@ const controlledDevices = devices.slaves.map((slave) => {
   return new TuyAPI(Object.assign({persistentConnection: true}, slave.credentials));
 })
 client.getDevice(devices.master.credentials).then((device) => {
-  device.startPolling(500);
+  device.startPolling(1000);
 
   // Plug Events
   device.on('power-on', () => {
+    axios.get('https://maker.ifttt.com/trigger/garage_light_on/with/key/dfPZzWdch5x-EI18lzAB0Z')
+    axios.get('https://maker.ifttt.com/trigger/record_garage_event/with/key/dfPZzWdch5x-EI18lzAB0Z')
 
     controlledDevices.forEach((slave) => {
       slave.set({set: true});
@@ -44,6 +48,7 @@ client.getDevice(devices.master.credentials).then((device) => {
     logEvent('power-on', device);
   });
   device.on('power-off', () => {
+    axios.get('https://maker.ifttt.com/trigger/garage_light_off/with/key/dfPZzWdch5x-EI18lzAB0Z')
 
     controlledDevices.forEach((slave) => {
       slave.set({set: false});
