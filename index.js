@@ -34,6 +34,17 @@ var logEvent = function (eventName, device, state) {
 const controlledDevices = devices.slaves.map((slave) => {
   return new TuyAPI(Object.assign({persistentConnection: true}, slave.credentials));
 })
+
+function slaveInteraction(slave, newState) {
+  slave.on('connected', () => {
+    slave.set({set: newState})
+  });
+  slave.on('error', (err) => {
+    console.log(err)
+  });
+  slave.connect().then(() => {slave.disconnect()})
+}
+
 client.getDevice(devices.master.credentials).then((device) => {
   device.startPolling(1000);
 
@@ -43,7 +54,7 @@ client.getDevice(devices.master.credentials).then((device) => {
     axios.get('https://maker.ifttt.com/trigger/record_garage_event/with/key/dfPZzWdch5x-EI18lzAB0Z')
 
     controlledDevices.forEach((slave) => {
-      slave.set({set: true});
+      slaveInteraction(slave, true)
     })
     logEvent('power-on', device);
   });
@@ -51,7 +62,7 @@ client.getDevice(devices.master.credentials).then((device) => {
     axios.get('https://maker.ifttt.com/trigger/garage_light_off/with/key/dfPZzWdch5x-EI18lzAB0Z')
 
     controlledDevices.forEach((slave) => {
-      slave.set({set: false});
+      slaveInteraction(slave, false)
     })
     logEvent('power-off', device);
   });
